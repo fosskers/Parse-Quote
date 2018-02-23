@@ -27,7 +27,10 @@ default-extensions:
 dependencies:
   - base >= 4.7 && < 5
   - attoparsec >= 0.13 && < 0.14
+  - bytestring
+  - hourglass >= 0.2 && < 0.3
   - protolude >= 0.2
+  - text
 
 library:
   source-dirs: lib
