@@ -1,0 +1,38 @@
+name:                parse-quote
+version:             0.1.0.0
+#synopsis:
+#description:
+homepage:            https://github.com/fosskers/parse-quote
+license:             BSD3
+author:              Colin Woodbury
+maintainer:          colingw@gmail.com
+copyright:           2018 Colin Woodbury
+category:            Web
+
+extra-source-files:
+- README.md
+
+ghc-options:
+  - -fwarn-unused-imports
+  - -fwarn-unused-binds
+  - -fwarn-name-shadowing
+  - -fwarn-unused-matches
+  - -fwarn-incomplete-patterns
+  - -fwarn-incomplete-uni-patterns
+
+default-extensions:
+  - NoImplicitPrelude
+  - OverloadedStrings
+
+dependencies:
+  - base >= 4.7 && < 5
+  - attoparsec >= 0.13 && < 0.14
+  - protolude >= 0.2
+
+library:
+  source-dirs: lib
+
+executables:
+  parse-quote:
+    source-dirs:      parse-quote
+    main:             Main.hs
