@@ -5,6 +5,9 @@ import Time.Types (TimeOfDay)
 
 ---
 
+-- | ASSUMPTIONS:
+--
+--  * We want actual numbers, not just the string representations of those numbers.
 data Quote = Quote { packetTime :: TimeOfDay
                    , acceptTime :: TimeOfDay
                    , issueCode  :: ISIN

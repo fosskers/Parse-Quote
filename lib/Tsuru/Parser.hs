@@ -1,4 +1,4 @@
-module Tsuru.Parser ( quote ) where
+module Tsuru.Parser where
 
 import qualified Data.Attoparsec.ByteString as A
 import           Data.Text.Encoding (decodeUtf8)
@@ -8,6 +8,7 @@ import           Tsuru.Types
 
 ---
 
+-- | Each `Quote` is parsed from 215 bytes.
 quote :: A.Parser Quote
 quote = do
   header
@@ -19,7 +20,10 @@ quote = do
   A.take 50  -- No. of best bid/ask quotes
   at <- accept
   A.word8 0xff
-  pure $ Quote undefined at ic bs as
+  pure $ Quote dummy at ic bs as
+
+dummy :: TimeOfDay
+dummy = TimeOfDay (Hours 0) (Minutes 0) (Seconds 0) (NanoSeconds 0)
 
 header :: A.Parser ()
 header = void $ A.string "B6034"
@@ -34,16 +38,17 @@ ask :: A.Parser Ask
 ask = uncurry Ask <$> pair
 
 pair :: A.Parser (Word, Price)
-pair = f <$> A.take 5 <*> A.take 7
-  where f p q = undefined
+pair = f <$> A.count 5 digit <*> A.count 7 digit
+  where f p q = (flatten q, Price $ flatten p)
 
 accept :: A.Parser TimeOfDay
-accept = TimeOfDay
-  <$> fmap Hours digit
-  <*> fmap Minutes digit
-  <*> fmap Seconds digit
-  <*> fmap NanoSeconds digit
+accept = TimeOfDay <$> fmap Hours two <*> fmap Minutes two <*> fmap Seconds two <*> fmap NanoSeconds two
+  where two = fromIntegral . flatten <$> A.count 2 digit
 
-digit :: A.Parser Int64
-digit = fromIntegral . (\n -> n - 0x30) <$> A.satisfy isDigit
+digit :: A.Parser Word8
+digit = (\n -> n - 0x30) <$> A.satisfy isDigit
   where isDigit w = w >= 0x30 && w <= 0x39
+
+-- | Collapse a series of digits into their true form.
+flatten :: [Word8] -> Word
+flatten = foldl' (\acc n -> acc * 10 + fromIntegral n) 0
