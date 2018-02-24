@@ -8,10 +8,10 @@ import           Tsuru.Types
 
 ---
 
--- | Each `Quote` is parsed from 215 bytes.
-quote :: A.Parser Quote
-quote = do
-  header
+-- | Each `Quote` is parsed from 215 bytes, but can be preceded by "header noise."
+quote :: TimeOfDay -> A.Parser Quote
+quote pktTime = do
+  A.manyTill A.anyWord8 header  -- Not very efficient, but at least the header isn't long.
   ic <- issue
   A.take 12  -- Issue seq.-no, Market Status Type, Total bid quote volume
   bs <- reverse <$> A.count 5 bid
@@ -20,10 +20,7 @@ quote = do
   A.take 50  -- No. of best bid/ask quotes
   at <- accept
   A.word8 0xff
-  pure $ Quote dummy at ic bs as
-
-dummy :: TimeOfDay
-dummy = TimeOfDay (Hours 0) (Minutes 0) (Seconds 0) (NanoSeconds 0)
+  pure $ Quote pktTime at ic bs as
 
 header :: A.Parser ()
 header = void $ A.string "B6034"

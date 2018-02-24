@@ -2,3 +2,7 @@ resolver: lts-10.6
 
 packages:
   - .
+
+extra-deps:
+  - streaming-pcap-1.0.0
+  - pcap-0.4.5.2
