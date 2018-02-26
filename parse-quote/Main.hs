@@ -16,7 +16,7 @@ import           Tsuru.Types
 
 ---
 
--- | How should Quote entries be ordered in their output?
+-- | How Quote entries should be ordered in their output.
 data Order = AsIs | ByTime deriving (Eq, Show)
 
 data Env = Env { ordering :: Order, path :: FilePath } deriving (Eq, Show)
@@ -43,7 +43,7 @@ reorder AsIs s   = s
 reorder ByTime s = do
   mq <- lift $ S.uncons s
   case mq of
-    Nothing      -> pure ()
+    Nothing      -> pure ()  -- The stream was empty before we could try anything.
     Just (q, s') -> go (Q.singleton (acceptTime q) q) s'
   where go !pq strm = do
           mq <- lift $ S.uncons strm
