@@ -35,7 +35,7 @@ quotes :: FilePath -> Stream (Of Quote) IO ()
 quotes = S.concat . S.map ptoq . NPS.offline
 
 work :: Env -> IO ()
-work (Env o p) = S.length_ (quotes p) >>= print
+work (Env o p) = S.mapM_ putText . S.take 30 . S.map prettyQuote $ quotes p
 
 main :: IO ()
 main = execParser opts >>= work
