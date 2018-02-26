@@ -23,7 +23,7 @@ data Env = Env { ordering :: Order, path :: FilePath } deriving (Eq, Show)
 
 envP :: Parser Env
 envP = Env
-  <$> flag AsIs ByTime (short 'r' <> help "Order output by 'quote accept time'?")
+  <$> flag AsIs ByTime (short 'r' <> help "Order output by 'quote accept time'")
   <*> argument str (metavar "FILE")
 
 -- TODO TIMEZONES!

@@ -1,0 +1,82 @@
+* Preamble
+
+This is an implementation of /parse-quote/, part of the developer application
+for Tsuru Capital.
+
+To compile (assumes ~stack~, no ~.cabal~ is committed on purpose):
+
+#+BEGIN_SRC bash
+  stack build
+#+END_SRC
+
+Usage:
+
+#+BEGIN_EXAMPLE
+  Usage: parse-quote [-r] FILE
+
+  Available options:
+    -r                       Order output by 'quote accept time'
+    -h,--help                Show this help text
+#+END_EXAMPLE
+
+* Details
+
+** Streaming
+
+Writing a custom parser for the Quote Packet Specification was straight-forward
+enough with ~attoparsec~. ~hexl-mode~ from Emacs is always quite handy for
+debugging these.
+
+I've written [[http://hackage.haskell.org/package/streaming-osm][streaming byte parsers]] before, so when I saw this:
+
+#+BEGIN_QUOTE
+It is particularly important that your program runs just as efficiently on a
+small file as it does on a large file
+#+END_QUOTE
+
+I immediately thought to reach for the ~streaming~ library's integration with ~attoparsec~.
+However, given that the packet arrival time was present in the /pcap/ packet header and
+not the ~Quote~ content itself, I had two options:
+
+1. Extend my existing parser to understand enough of pcap, sufficient to parse
+   out the timestamp, or;
+2. Piggy-back on existing ~pcap~ code elsewhere.
+
+While (1) is probably the "real solution" (see /Performance/ below), (2) seemed
+appropriate for the scope of this application. Using the existing [[http://hackage.haskell.org/package/pcap][pcap]] library,
+I wrote and published [[http://hackage.haskell.org/package/streaming-pcap][streaming-pcap]], which made ~parse-quote~ nice to write.
+As an added bonus of using ~streaming-pcap~, ~parse-quote~ could be easily
+extended to parse live data as well.
+
+** Output Order (~-r~)
+
+It wasn't sufficient to consider the Accept Times of just two adjacent Quotes -
+an entire three second block of them had to be considered. Here I use a Priority
+Queue from [[http://hackage.haskell.org/package/pqueue/][pqueue]] to order the quotes for me automatically. Only when an incoming
+~Quote~ arrived three seconds later than the min of the queue do we finally pop
+it and stream that min.
+
+Since the window is limited to three seconds, we can expect that the Priority Queue
+won't consume much memory. Thousands of quotes may appear in three seconds, but
+certainly not millions.
+
+** Time
+
+The Packet Arrival time and Quote Accept time differ by nine hours.
+Otherwise ignoring the hour, they typically differ by only a few tens-of-milliseconds.
+Given this and the fact that Japan is nine hours ahead of UTC convinced me that
+the hour discrepancy wasn't imporant for this exercise and was thus left as-is.
+
+** Performance
+
+On my machine, just having ~streaming-pcap~ call through ~pcap~ for each packet in the test file
+and count the total of them takes around 37 seconds. Knowing what ~attoparsec~ is
+instead capable of, this seems embarassingly slow for a 5mb file. Actually parsing
+the Quote content slows things down even further. I can only assume that ~pcap~
+(and thus ~libpcap~) is the bottleneck here.
+
+A more performant variation would be to base ~streaming-pcap~ on ~attoparsec~,
+~streaming~, ~streaming-bytestring~ and ~streaming-utils~ to parse everything
+ourselves. Unless parsing pcap packets is more complicated than I'm assuming,
+this should give us a two or three order of magnitude speed up while maintaining
+the option to stream locally or online from a real port.

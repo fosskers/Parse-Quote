@@ -10,7 +10,7 @@ copyright:           2018 Colin Woodbury
 category:            Web
 
 extra-source-files:
-  - README.md
+  - README.org
 
 ghc-options:
   - -fwarn-unused-imports
