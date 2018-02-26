@@ -9,7 +9,7 @@ import           Tsuru.Types
 ---
 
 -- | Each `Quote` is parsed from 215 bytes, but can be preceded by "header noise."
-quote :: TimeOfDay -> A.Parser Quote
+quote :: DateTime -> A.Parser Quote
 quote pktTime = do
   A.manyTill A.anyWord8 header  -- Not very efficient, but at least the header isn't long.
   ic <- issue
@@ -38,6 +38,7 @@ pair :: A.Parser (Word, Price)
 pair = f <$> A.count 5 digit <*> A.count 7 digit
   where f p q = (flatten q, Price $ flatten p)
 
+-- TODO Likely need to multiple the NanoSeconds by 1000 here.
 accept :: A.Parser TimeOfDay
 accept = TimeOfDay <$> fmap Hours two <*> fmap Minutes two <*> fmap Seconds two <*> fmap NanoSeconds two
   where two = fromIntegral . flatten <$> A.count 2 digit

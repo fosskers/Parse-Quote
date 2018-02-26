@@ -51,6 +51,8 @@ executables:
   parse-quote:
     source-dirs: parse-quote
     main: Main.hs
+    ghc-options:
+      - -O2
     dependencies:
       - parse-quote
       - optparse-applicative >= 0.14 && < 0.15

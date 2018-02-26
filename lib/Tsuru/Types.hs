@@ -1,14 +1,14 @@
 module Tsuru.Types where
 
 import Protolude
-import Time.Types (TimeOfDay)
+import Time.Types (TimeOfDay, DateTime)
 
 ---
 
 -- | ASSUMPTIONS:
 --
 --  * We want actual numbers, not just the string representations of those numbers.
-data Quote = Quote { packetTime :: TimeOfDay
+data Quote = Quote { packetTime :: DateTime
                    , acceptTime :: TimeOfDay
                    , issueCode  :: ISIN
                    , bids       :: [Bid]
