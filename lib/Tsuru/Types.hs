@@ -11,7 +11,7 @@ import           Time.Types
 --
 --  * We want actual numbers, not just the string representations of those numbers.
 data Quote = Quote { packetTime :: DateTime
-                   , acceptTime :: TimeOfDay
+                   , acceptTime :: DateTime
                    , issueCode  :: ISIN
                    , bids       :: [Bid]
                    , asks       :: [Ask] } deriving (Eq, Ord, Show)
@@ -27,7 +27,7 @@ data Ask = Ask { aQuant :: Word, aPrice :: Price } deriving (Eq, Ord, Show)
 newtype Price = Price Word deriving (Eq, Ord, Show)
 
 prettyQuote :: Quote -> Text
-prettyQuote (Quote pt at (ISIN ic) bs as) = T.intercalate " " $ vs <> bs' <> as'
+prettyQuote (Quote pt (DateTime _ at) (ISIN ic) bs as) = T.intercalate " " $ vs <> bs' <> as'
   where vs  = [ prettyDateTime pt, prettyTime at, ic ]
         bs' = map (\(Bid q (Price p)) -> T.pack $ printf "%d@%d" q p) bs
         as' = map (\(Ask q (Price p)) -> T.pack $ printf "%d@%d" q p) as

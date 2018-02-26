@@ -20,7 +20,7 @@ quote pktTime = do
   A.take 50  -- No. of best bid/ask quotes
   at <- accept
   A.word8 0xff
-  pure $ Quote pktTime at ic bs as
+  pure $ Quote pktTime (pktTime { dtTime = at }) ic bs as
 
 header :: A.Parser ()
 header = void $ A.string "B6034"
