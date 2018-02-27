@@ -19,6 +19,12 @@ Usage:
     -h,--help                Show this help text
 #+END_EXAMPLE
 
+Example:
+
+#+BEGIN_EXAMPLE
+stack exec -- parse-quote mdf-kospi200.20110216-0.pcap
+#+END_EXAMPLE
+
 * Details
 
 ** Streaming
