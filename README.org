@@ -41,18 +41,10 @@ small file as it does on a large file
 #+END_QUOTE
 
 I immediately thought to reach for the ~streaming~ library's integration with ~attoparsec~.
-However, given that the packet arrival time was present in the /pcap/ packet header and
-not the ~Quote~ content itself, I had two options:
+This proved fruitful and much faster than the "native" solution provided by the
+existing [[http://hackage.haskell.org/package/pcap][pcap]] library.
 
-1. Extend my existing parser to understand enough of pcap, sufficient to parse
-   out the timestamp, or;
-2. Piggy-back on existing ~pcap~ code elsewhere.
-
-While (1) is probably the "real solution" (see /Performance/ below), (2) seemed
-appropriate for the scope of this application. Using the existing [[http://hackage.haskell.org/package/pcap][pcap]] library,
 I wrote and published [[http://hackage.haskell.org/package/streaming-pcap][streaming-pcap]], which made ~parse-quote~ nice to write.
-As an added bonus of using ~streaming-pcap~, ~parse-quote~ could be easily
-extended to parse live data as well.
 
 ** Output Order (~-r~)
 
@@ -75,14 +67,5 @@ the hour discrepancy wasn't imporant for this exercise and was thus left as-is.
 
 ** Performance
 
-On my machine, just having ~streaming-pcap~ call through ~pcap~ for each packet in the test file
-and count the total of them takes around 37 seconds. Knowing what ~attoparsec~ is
-instead capable of, this seems embarassingly slow for a 5mb file. Actually parsing
-the Quote content slows things down even further. I can only assume that ~pcap~
-(and thus ~libpcap~) is the bottleneck here.
-
-A more performant variation would be to base ~streaming-pcap~ on ~attoparsec~,
-~streaming~, ~streaming-bytestring~ and ~streaming-utils~ to parse everything
-ourselves. Unless parsing pcap packets is more complicated than I'm assuming,
-this should give us a two or three order of magnitude speed up while maintaining
-the option to stream locally or online from a real port.
+On my machine, ~parse-quote~ prints the tests in about one second without ~-r~,
+and in about 15 seconds with ~-r~.
