@@ -21,6 +21,8 @@ data Order = AsIs | ByTime deriving (Eq, Show)
 
 data Env = Env { ordering :: Order, path :: FilePath } deriving (Eq, Show)
 
+type RIO = ResourceT IO
+
 envP :: Parser Env
 envP = Env
   <$> flag AsIs ByTime (short 'r' <> help "Order output by 'quote accept time'")
@@ -34,11 +36,11 @@ ptoq (NPS.Packet h b) = A.parseOnly (quote timestamp) b
         nanos     = NanoSeconds . (1000 *) . fromIntegral $ hdrUseconds h
 
 -- | All legally parsable `Quote` values.
-quotes :: FilePath -> Stream (Of Quote) IO ()
+quotes :: FilePath -> Stream (Of Quote) RIO ()
 quotes = S.concat . S.map ptoq . NPS.offline
 
 -- | Reorder the values of the `Stream` according to the given `Order`.
-reorder :: Order -> Stream (Of Quote) IO () -> Stream (Of Quote) IO ()
+reorder :: Order -> Stream (Of Quote) RIO () -> Stream (Of Quote) RIO ()
 reorder AsIs s   = s
 reorder ByTime s = do
   mq <- lift $ S.uncons s
@@ -59,7 +61,7 @@ are3Apart :: DateTime -> DateTime -> Bool
 are3Apart q q' = (\(Seconds t) -> abs t > 3) $ timeDiff q q'
 
 work :: Env -> IO ()
-work (Env o p) = S.mapM_ putText . S.map prettyQuote . reorder o $ quotes p
+work (Env o p) = runResourceT . S.mapM_ putText . S.map prettyQuote . reorder o $ quotes p
 
 main :: IO ()
 main = execParser opts >>= work
